@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -9,19 +10,20 @@ func init() {
 }
 
 func main() {
-	blockchain := NewBlockchain()
+	myBlockchainAddress := "my_blockchain_address"
+	blockchain := NewBlockchain(myBlockchainAddress)
 	blockchain.Print()
 
 	blockchain.AddTransaction("A", "B", 1.0)
-	prevHash := blockchain.LastBlock().Hash()
-	nonce := blockchain.ProofOfWork()
-	blockchain.CreateBlock(nonce, prevHash)
+	blockchain.Mining()
 	blockchain.Print()
 
 	blockchain.AddTransaction("C", "D", 2.0)
 	blockchain.AddTransaction("X", "Y", 3.0)
-	prevHash = blockchain.LastBlock().Hash()
-	nonce = blockchain.ProofOfWork()
-	blockchain.CreateBlock(nonce, prevHash)
+	blockchain.Mining()
 	blockchain.Print()
+
+	fmt.Printf("MY: %.1f\n", blockchain.CalculateTotalAmount("my_blockchain_address"))
+	fmt.Printf("C: %.1f\n", blockchain.CalculateTotalAmount("C"))
+	fmt.Printf("D: %.1f\n", blockchain.CalculateTotalAmount("D"))
 }

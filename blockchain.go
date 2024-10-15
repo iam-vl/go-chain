@@ -4,10 +4,15 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 )
 
-const MINING_DIFFICULTY = 3
+const (
+	MINING_DIFFICULTY = 3
+	MINING_SENDER     = "THE BLOCKCHAIN"
+	MINING_REWARD     = 1.0
+)
 
 func (b *Block) Hash() [32]byte {
 	m, _ := json.Marshal(b)
@@ -34,7 +39,7 @@ func (bc *Blockchain) CopyTransactionPool() []*Transaction {
 	transactions := make([]*Transaction, 0)
 	for _, t := range transactions {
 		transactions = append(transactions,
-			NewTransaction(t.senderBlockchainAddress, t.recepientBlockchainAddress, t.value))
+			NewTransaction(t.senderBlockchainAddress, t.recipientBlockchainAddress, t.value))
 	}
 	return transactions
 }
@@ -54,7 +59,29 @@ func (bc *Blockchain) ProofOfWork() int {
 		nonce += 1
 	}
 	return nonce
+}
 
+func (bc *Blockchain) Mining() bool {
+	bc.AddTransaction(MINING_SENDER, bc.blockchainAddress, MINING_REWARD)
+	nonce := bc.ProofOfWork()
+	previousHash := bc.LastBlock().Hash()
+	bc.CreateBlock(nonce, previousHash)
+	log.Println("action=mining, status=success")
+	return true
+}
+
+func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
+	var totalAmt float32 = 0.0
+	for _, b := range bc.chain {
+		for _, t := range b.Transactions {
+			if blockchainAddress == t.recipientBlockchainAddress {
+				totalAmt += t.value
+			} else if blockchainAddress == t.senderBlockchainAddress {
+				totalAmt -= t.value
+			}
+		}
+	}
+	return totalAmt
 }
 
 // func (b *Block) MarshalJson() ([]byte, error) {
